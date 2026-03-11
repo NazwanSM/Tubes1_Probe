@@ -380,6 +380,9 @@ public class RobotPlayer {
 
         Comms.processMessages(rc);
 
+        MapLocation nearestAllyTower = Nav.findNearestAllyTower(rc);
+        int paint = rc.getPaint();
+
         MapLocation rushTarget = enemyBase;
         if (Comms.hasEnemyTowerIntel(round)) {
             rushTarget = Comms.enemyTowerLoc;
@@ -403,6 +406,22 @@ public class RobotPlayer {
                 } else if (rushTarget.equals(Comms.enemyTowerLoc)) {
                     Comms.enemyTowerLoc = null; 
                     rushTarget = enemyBase;
+                }
+            }
+        }
+
+        if (rc.isActionReady() && paint < Heuristics.SPLASHER_LOW_PAINT && nearestAllyTower != null) {
+            int distToTower = myLoc.distanceSquaredTo(nearestAllyTower);
+            if (distToTower <= 2) {
+                RobotInfo towerInfo = rc.senseRobotAtLocation(nearestAllyTower);
+                if (towerInfo != null) {
+                    int towerPaint = towerInfo.getPaintAmount();
+                    int availablePaint = Math.max(0, towerPaint - Heuristics.TOWER_PAINT_RESERVE);
+                    int wantPaint = rc.getType().paintCapacity - paint;
+                    int withdrawAmt = -Math.min(wantPaint, availablePaint);
+                    if (withdrawAmt < 0 && rc.canTransferPaint(nearestAllyTower, withdrawAmt)) {
+                        rc.transferPaint(nearestAllyTower, withdrawAmt);
+                    }
                 }
             }
         }
@@ -436,7 +455,7 @@ public class RobotPlayer {
             Direction bestMoveDir = null;
             for (Direction dir : directions) {
                 if (rc.canMove(dir)) {
-                    int score = Heuristics.scoreSplasherMove(rc, dir, rushTarget);
+                    int score = Heuristics.scoreSplasherMove(rc, dir, rushTarget, nearestAllyTower, paint);
                     if (score > bestMoveScore) {
                         bestMoveScore = score;
                         bestMoveDir = dir;

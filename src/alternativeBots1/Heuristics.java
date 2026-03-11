@@ -180,7 +180,8 @@ public class Heuristics {
         return score;
     }
 
-    static int scoreSplasherMove(RobotController rc, Direction dir, MapLocation rushTarget) throws GameActionException {
+    static int scoreSplasherMove(RobotController rc, Direction dir, MapLocation rushTarget,
+            MapLocation nearestAllyTower, int paint) throws GameActionException {
         MapLocation myLoc = rc.getLocation();
         MapLocation target = myLoc.add(dir);
         int score = SCORE_EXPLORE;
@@ -192,9 +193,31 @@ public class Heuristics {
             if (newDist < currDist) {
                 score += SCORE_RUSH_ENEMY;
             }
+        } else {
+            MapLocation center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+            int currDist = myLoc.distanceSquaredTo(center);
+            int newDist = target.distanceSquaredTo(center);
+            if (newDist < currDist) {
+                score += 200;
+            }
         }
 
-        // Anti-cluster: hindari ally splasher
+        if (paint < SPLASHER_LOW_PAINT && nearestAllyTower != null) {
+            int currDist = myLoc.distanceSquaredTo(nearestAllyTower);
+            int newDist = target.distanceSquaredTo(nearestAllyTower);
+            if (newDist < currDist) {
+                score += SCORE_RUSH_ENEMY;
+            }
+        } else if (nearestAllyTower != null) {
+            int distToTower = myLoc.distanceSquaredTo(nearestAllyTower);
+            if (distToTower <= 25) {
+                int newDistToTower = target.distanceSquaredTo(nearestAllyTower);
+                if (newDistToTower > distToTower) {
+                    score += 150;
+                }
+            }
+        }
+
         RobotInfo[] nearbyAllies = rc.senseNearbyRobots(target, 8, rc.getTeam());
         for (RobotInfo ally : nearbyAllies) {
             if (ally.getType() == UnitType.SPLASHER) {
@@ -251,10 +274,6 @@ public class Heuristics {
         return score;
     }
 
-    /**
-     * Evaluasi arah gerak mopper (greedy heuristic).
-     * Faktor: enemy paint tiles, ally yg butuh paint, retreat ke tower
-     */
     static int scoreMopperMove(RobotController rc, Direction dir,
             MapLocation nearestTower, int paint, boolean hasEnemyPaintNearby) throws GameActionException {
         MapLocation myLoc = rc.getLocation();
@@ -268,7 +287,6 @@ public class Heuristics {
             if (tilePaint.isEnemy()) {
                 score += SCORE_MOVE_TO_ENEMY_PAINT;
             }
-            // Ally dan empty tile punya skor sama → tidak ada pull ke empty
             if (tilePaint.isAlly() || tilePaint == PaintType.EMPTY) {
                 score -= 30;
             }
@@ -277,7 +295,6 @@ public class Heuristics {
             }
         }
 
-        // Kalo ga ada enemy paint nearby, deketin ally yg butuh paint (transfer mode)
         if (!hasEnemyPaintNearby) {
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(target, 4, rc.getTeam());
             for (RobotInfo ally : nearbyAllies) {
@@ -287,7 +304,6 @@ public class Heuristics {
                 }
             }
 
-            // Eksplorasi: bias ke center map supaya menyebar
             MapLocation center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
             int currDist = myLoc.distanceSquaredTo(center);
             int newDist = target.distanceSquaredTo(center);
@@ -296,7 +312,6 @@ public class Heuristics {
             }
         }
 
-        // paint rendah: retreat ke tower ally
         if (paint < MOPPER_LOW_PAINT && nearestTower != null) {
             int currDist = myLoc.distanceSquaredTo(nearestTower);
             int newDist = target.distanceSquaredTo(nearestTower);
