@@ -1,4 +1,4 @@
-package mainBot;
+package alternativeBots1;
 
 public enum Task {
     EXPLORE,

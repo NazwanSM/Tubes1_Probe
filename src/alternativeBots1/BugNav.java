@@ -1,4 +1,4 @@
-package mainBot;
+package alternativeBots1;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
