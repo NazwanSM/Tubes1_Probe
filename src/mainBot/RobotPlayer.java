@@ -1,64 +1,48 @@
 package mainBot;
 
-import battlecode.common.*;
+import battlecode.common.Clock;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
+import battlecode.common.UnitType;
 
-import java.util.Random;
-
-
-/**
- * RobotPlayer is the class that describes your main robot strategy.
- * The run() method inside this class is like your main function: this is what we'll call once your robot
- * is created!
- */
 public class RobotPlayer {
-    static int turnCount = 0;
 
-    static final Random rng = new Random(6147);
-
-    /** Array containing all the possible movement directions. */
-    static final Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST,
-    };
+    private static BaseRobot robot = null;
+    private static Tower tower = null;
 
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
-    }
 
-    /**
-     * Run a single turn for towers.
-     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
-     */
-    public static void runTower(RobotController rc) throws GameActionException{
+        UnitType type = rc.getType();
 
-    }
+        if (type.isTowerType()) {
+            tower = new Tower(rc);
+        } else {
+            switch (type) {
+                case SOLDIER:  robot = new Soldier(rc);  break;
+                case SPLASHER: robot = new Splasher(rc); break;
+                case MOPPER:   robot = new Mopper(rc);   break;
+                default: break;
+            }
+        }
 
-
-    /**
-     * Run a single turn for a Soldier.
-     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
-     */
-    public static void runSoldier(RobotController rc) throws GameActionException{
-    }
-
-
-    /**
-     * Run a single turn for a Mopper.
-     * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
-     */
-    public static void runMopper(RobotController rc) throws GameActionException{
-    }
-
-    public static void runSplasher(RobotController rc) throws GameActionException{
-    }
-
-    public static void updateEnemyRobots(RobotController rc) throws GameActionException{
+        while (true) {
+            try {
+                if (type.isTowerType()) {
+                    tower.run();
+                } else if (robot != null) {
+                    robot.run();
+                }
+            } catch (GameActionException e) {
+                System.out.println("GAE: " + e.getMessage());
+                e.printStackTrace();
+            } catch (Exception e) {
+                System.out.println("ERR: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                Clock.yield();
+            }
+        }
     }
 }
 
