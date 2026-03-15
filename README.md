@@ -16,15 +16,15 @@ Bot ini berfokus pada optimasi mikro-manajemen dengan evaluasi probabilitas aksi
 - **Mopper**: Memberi skor untuk memukul (*mop*) tile cat musuh terdekat, *mop-swing* jika mengenai kerumunan musuh, transfer cat ke rekan, atau menarik cat dari tower bila stok kritis. Pergerakan selalu diarahkan ke sumber cat musuh atau rekan yang membutuhkan cat.
 
 #### 2. `alternativeBots1`
-Bot ini berfokus pada agresi ekonomi awal dengan manajemen tugas berbasis antrean (*Stack*).
-- **Tower**: Di fase pembukaan secara greedy memaksa *spawn* beberapa Soldier, lalu memilih jenis *spawn* (Soldier/Splasher/Mopper) berdasar jumlah *chips*, ancaman musuh, dan rotasi sederhana; serta me-relai titik pertempuran.
-- **Soldier**: Menggunakan *stack* tugas greedy: merebut reruntuhan terdekat (membangun *Money Tower*), menggeser prioritas menjadi *rush* bila reruntuhan diperebutkan atau musuh dekat, mengisi cat jika di bawah ambang batas, dan selalu mewarnai pijakan jika bukan warna sekutu.
-- **Splasher**: Memprioritaskan keamanan cat (menghindari kehabisan cat), memilih pusat *splash* terbaik (cat musuh > kosong > sekutu), mengejar musuh terdekat tanpa visi jangka panjang, atau eksplorasi menuju *battlefront*.
-- **Mopper**: Jika terdeteksi musuh, mencoba *mop-swing* ke arah terbaik; jika kosong, membersihkan cat musuh terdekat. Ambang isi ulang cat yang rendah memicu tugas *refill*, lalu kembali eksplorasi/*rush*.
+Bot ini berfokus pada agresi ekonomi awal dengan manajemen tugas berbasis tumpukan (*Stack*) yang bekerja seperti *State Machine*. Ia langsung mengambil keputusan pasti berdasarkan *state* teratas.
+- **Tower**: Di fase pembukaan memaksa *spawn* beberapa Soldier, berlajut memilih jenis *spawn* (Soldier/Splasher/Mopper) berdasar urutan sederhana dengan insting reaktif (tergantung *chips* & ancaman musuh), serta me-relai pertempuran.
+- **Soldier**: Menggunakan *stack* prioritas berlapis: pada hierarki tertinggi akan *rush* musuh/mempertahankan reruntuhan, di bawahnya terdapat tugas membangun *Money Tower* pada reruntuhan terdekat, lalu mengisi cat secara reaktif, dan selalu mewarnai pijakan.
+- **Splasher**: Memprioritaskan keamanan cat (menghindari kehabisan cat dengan reaktif *refill*), menyerang pusat *splash* berprioritas statis (cat musuh > kosong > sekutu), mengejar musuh terdekat tanpa kalkulasi pergerakan rumit, atau eksplorasi.
+- **Mopper**: Jika terdeteksi musuh, langsung bergerak ke musuh reaktif terdekat dan melakukan *mop-swing* ke arahnya, saat lengang membersihkan cat musuh terdekat. Ambang isi ulang cat yang rendah seketika memicu transisi ke tugas *refill*.
 
 #### 3. `alternativeBots2`
 Bot ini berfokus pada sinkronisasi taktis berskala global menggunakan sistem komunikasi terpusat (*Goal Manager*).
-- **Tower**: Pola *spawn* menggunakan probabilitas dinamis per fase (*early/mid/late*) dengan rasio unit yang berbeda. Berfungsi sebagai pusat komando yang me-relai pesan reruntuhan, tower musuh, dan kebutuhan mopper; serta menembak target terpilih oleh modul *combat*.
+- **Tower**: Pola *spawn* menggunakan probabilitas dinamis per fase (*early/mid/late*) dengan rasio unit yang berbeda. Berfungsi sebagai pusat komando yang me-relai pesan reruntuhan, tower musuh, dan kebutuhan mopper, serta menembak target terpilih oleh modul *combat*.
 - **Soldier**: Menggunakan *Goal Manager* yang secara greedy memilih prioritas antara *capture/contest ruin*, *battlefront*, *rush* tower musuh, *paint-area*, atau eksplorasi. Pemilihan tipe tower bergeser secara dinamis (*Money Tower* lalu beralih ke *Paint Tower*) mengikuti fase permainan. Saat di reruntuhan, ia mengecat tile yang salah paling dekat dan menuntaskan pola yang tersedia.
 - **Splasher**: Mencari pusat serangan dengan akumulasi skor tertinggi (banyak cat musuh/kosong, penalti jarak), melakukan *refill* cepat di tower terdekat saat cat < 100, lalu bergerak ke *battlefront* atau sumber cat musuh.
 - **Mopper**: Menebar cat musuh berdasarkan skor berlapis (kedekatan, kebutuhan transfer cat sekutu, permintaan `NEED_MOPPER` dari jaringan), memprioritaskan *mop-swing* jika mengenai musuh, serta membagikan sisa cat berlebih ke Soldier ber-cat rendah.
@@ -36,7 +36,7 @@ Sebelum menjalankan program, pastikan Anda memiliki beberapa dependensi berikut:
 - **JDK 21** (wajib, sesuai dengan konfigurasi `build.gradle`).
 - **Gradle Wrapper** (sudah disertakan pada repositori ini via `gradlew` / `gradlew.bat`, tidak perlu instal Gradle terpisah).
 - **Battlecode 2025 engine**: `artifacts/engine/engine.jar` harus tersedia (sudah disertakan pada repositori ini).
-- **Battlecode client**: Letakkan artefak klien sesuai Sistem Operasi Anda di direktori `artifacts/client/` (contoh Linux: `.AppImage`; Windows: `.msi/.exe`). Diperlukan bila ingin menonton tayangan pertandingan secara lokal.
+- **Battlecode client**: Letakkan artefak klien sesuai Sistem Operasi Anda di direktori `artifacts/client/` (contoh Linux: `.AppImage`, Windows: `.msi/.exe`). Diperlukan bila ingin menonton tayangan pertandingan secara lokal.
 
 ## Cara menjalankan program
 
