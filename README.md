@@ -44,12 +44,7 @@ Sebelum menjalankan program, pastikan Anda memiliki beberapa dependensi berikut:
 2. Pastikan `artifacts/engine/engine.jar` dan artefak klien sesuai OS tersedia di `artifacts/client/` (lihat pesan error `verifyPrebuiltArtifacts` bila belum ada).
 3. Build dan verifikasi:
    - Windows: `./gradlew.bat build`
-   - (Opsional) Jalankan unit test: `./gradlew.bat test`
-4. Jalankan match lokal (contoh `mainBot` vs `alternativeBots1` di peta `DefaultSmall`):
-   - `./gradlew.bat run -PteamA=mainBot -PteamB=alternativeBots1 -Pmaps=DefaultSmall`
-   - Replay tersimpan di folder `matches/` dengan ekstensi `.bc25`.
-5. Ubah default tim/peta global via `gradle.properties` atau override dengan opsi `-PteamA`, `-PteamB`, `-Pmaps` saat menjalankan perintah `run`.
-6. Paket siap submit: `./gradlew.bat zipForSubmit`.
+4. Jalankan match dengan cara run file dalam folder client dan mempilih opsi bots yang tersedia (Alternative bot 1/Alternative bot 2/Main Bot)
 
 ## Author
 
