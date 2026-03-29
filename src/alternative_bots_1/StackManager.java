@@ -1,4 +1,4 @@
-package alternativeBots1;
+package alternative_bots_1;
 
 public class StackManager {
 
